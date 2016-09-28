@@ -9,7 +9,10 @@
 import xml.etree.ElementTree as ET
 
 # units: 0.1 mils
-shrinkAmount = 20
+shrinkAmount = 40
+
+#input SVG file from KiCAD
+filename = 'test.svg'
 
 def processShape(pointStrs):
   
@@ -46,7 +49,7 @@ def processShape(pointStrs):
 
   return outStr
 
-tree = ET.parse('test.svg')
+tree = ET.parse(filename)
 root = tree.getroot()
 
 polylines = root.findall('.//{http://www.w3.org/2000/svg}polyline')
