@@ -8,66 +8,87 @@
 
 import xml.etree.ElementTree as ET
 
-# units: 0.1 mils
-shrinkAmount = 40
+# To use:
+# 1. Copy script to directory containing input SVG File
+# 2. Change 'filename' to name of input svg file
+# 3. Change 'output_filename' to a prefix to help identify output files
+# 4. Run script
+# 5. ??????
+# 6. Directory now contains a bunch of SVGs for different shrink amounts. Choose one and laser cut it.
 
-#input SVG file from KiCAD
-filename = 'test.svg'
+# PARAMETERS TO EDIT HERE!!!!! ##########################################################
 
-def processShape(pointStrs):
-  
-  points = []
-  
-  for pt in pointStrs:
-    point = {'x' : int(pt.split(',')[0]), 'y' : int(pt.split(',')[1])}
-    points.append(point)
+# Input SVG file name 
+filename = 'input.svg'
 
-  xVals = [pt['x'] for pt in points]
-  yVals = [pt['y'] for pt in points]
+# Output SVG file prefix
+output_name = 'Dashboard'
+ 
+# ########################################################################################\
 
-  xMin = min(xVals)
-  xMax = max(xVals)
-  yMin = min(yVals)
-  yMax = max(yVals)
+for shrinkAmount in range(0, 200, 10):
 
-  xMin += shrinkAmount
-  xMax -= shrinkAmount
-  yMin += shrinkAmount
-  yMax -= shrinkAmount
+    # units: 0.1 mils
+#    shrinkAmount = 10
 
-  points = [
-    {'x' : xMax, 'y' : yMax},
-    {'x' : xMin, 'y' : yMax},
-    {'x' : xMin, 'y' : yMin},
-    {'x' : xMax, 'y' : yMin},
-    {'x' : xMax, 'y' : yMax}
-  ]
+    #input SVG file from KiCAD
 
-  outStr = ''
-  for pt in points:
-    outStr += '{},{} '.format(pt['x'], pt['y'])
 
-  return outStr
+    def processShape(pointStrs):
+      
+      points = []
+      
+      for pt in pointStrs:
+        point = {'x' : int(pt.split(',')[0]), 'y' : int(pt.split(',')[1])}
+        points.append(point)
 
-tree = ET.parse(filename)
-root = tree.getroot()
+      xVals = [pt['x'] for pt in points]
+      yVals = [pt['y'] for pt in points]
 
-polylines = root.findall('.//{http://www.w3.org/2000/svg}polyline')
+      xMin = min(xVals)
+      xMax = max(xVals)
+      yMin = min(yVals)
+      yMax = max(yVals)
 
-print('{} polylines found'.format(len(polylines)))
+      xMin += shrinkAmount
+      xMax -= shrinkAmount
+      yMin += shrinkAmount
+      yMax -= shrinkAmount
 
-procCount = 0
+      points = [
+        {'x' : xMax, 'y' : yMax},
+        {'x' : xMin, 'y' : yMax},
+        {'x' : xMin, 'y' : yMin},
+        {'x' : xMax, 'y' : yMin},
+        {'x' : xMax, 'y' : yMax}
+      ]
 
-for polyline in polylines:
-  points = polyline.attrib['points'].strip().split(' ')
-  if len(points) != 5:
-    print('Skipping a polyline with {} points'.format(len(pointStr) - 1))
-    pass
-  else:
-    newStr = processShape(points)
-    polyline.set('points', newStr)
-    procCount += 1
+      outStr = ''
+      for pt in points:
+        outStr += '{},{} '.format(pt['x'], pt['y'])
 
-print ('{} polylines processed'.format(procCount))
+      return outStr
 
-tree.write('out.svg')
+    tree = ET.parse(filename)
+    root = tree.getroot()
+
+    polylines = root.findall('.//{http://www.w3.org/2000/svg}polyline')
+
+    print('{} polylines found'.format(len(polylines)))
+
+    procCount = 0
+
+    for polyline in polylines:
+      points = polyline.attrib['points'].strip().split(' ')
+      if len(points) != 5 and len(points) != 69:
+        print('Skipping a polyline with {} points'.format(len(points) - 1))
+        pass
+      else:
+        newStr = processShape(points)
+        polyline.set('points', newStr)
+        procCount += 1
+
+    print ('{} polylines processed'.format(procCount))
+
+    tree.write('{}.shrink-{}.svg'.format(output_name, shrinkAmount))
+	
